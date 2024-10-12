@@ -60,6 +60,21 @@ inline void init(struct mersenne_twister *rng, uint seed) {
 #ifndef IVS
 #define IVS 0
 #endif
+#ifndef IVS_MAX
+#define IVS_MAX 0
+#endif
+#define IV_MIN_0 (IVS & 31)
+#define IV_MIN_1 ((IVS >> 5) & 31)
+#define IV_MIN_2 ((IVS >> 10) & 31)
+#define IV_MIN_3 ((IVS >> 15) & 31)
+#define IV_MIN_4 ((IVS >> 20) & 31)
+#define IV_MIN_5 (IVS >> 25)
+#define IV_MAX_0 (IVS_MAX & 31)
+#define IV_MAX_1 ((IVS_MAX >> 5) & 31)
+#define IV_MAX_2 ((IVS_MAX >> 10) & 31)
+#define IV_MAX_3 ((IVS_MAX >> 15) & 31)
+#define IV_MAX_4 ((IVS_MAX >> 20) & 31)
+#define IV_MAX_5 (IVS_MAX >> 25)
 
 __kernel void find_initial_seeds(const uint offset, __global uint *cnt, __global uint *res_g) {
     uint seed = get_global_id(0) + offset;
@@ -82,6 +97,50 @@ __kernel void find_initial_seeds(const uint offset, __global uint *cnt, __global
         if ((ivs & 0x3fffffff) == IVS) {
             res_g[atomic_inc(&cnt[0])] = seed;
         }
+        ivs <<= 5;
+        ivs |= next_32(&rng);
+    }
+}
+
+__kernel void find_initial_seeds_range(const uint offset, __global uint *cnt, __global uint *res_g) {
+    uint seed = get_global_id(0) + offset;
+    struct mersenne_twister rng;
+    init(&rng, seed);
+    advance(&rng, MIN_ADVANCE);
+    uint ivs = 0;
+    ivs |= next_32(&rng);
+    ivs <<= 5;
+    ivs |= next_32(&rng);
+    ivs <<= 5;
+    ivs |= next_32(&rng);
+    ivs <<= 5;
+    ivs |= next_32(&rng);
+    ivs <<= 5;
+    ivs |= next_32(&rng);
+    ivs <<= 5;
+    ivs |= next_32(&rng);
+    for (int adv = MIN_ADVANCE; adv < MAX_ADVANCE; adv++) {
+        uchar iv;
+        iv = ivs & 31;
+        if (IV_MIN_0 <= iv && IV_MAX_0 >= iv) {
+            iv = (ivs >> 5) & 31;
+            if (IV_MIN_1 <= iv && IV_MAX_1 >= iv) {
+                iv = (ivs >> 10) & 31;
+                if (IV_MIN_2 <= iv && IV_MAX_2 >= iv) {
+                    iv = (ivs >> 15) & 31;
+                    if (IV_MIN_3 <= iv && IV_MAX_3 >= iv) {
+                        iv = (ivs >> 20) & 31;
+                        if (IV_MIN_4 <= iv && IV_MAX_4 >= iv) {
+                            iv = (ivs >> 25) & 31;
+                            if (IV_MIN_5 <= iv && IV_MAX_5 >= iv) {
+                                res_g[atomic_inc(&cnt[0])] = seed;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         ivs <<= 5;
         ivs |= next_32(&rng);
     }

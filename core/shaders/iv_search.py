@@ -57,6 +57,7 @@ class SearchIVThread(QThread):
             device,
             ivs_1,
             ivs_2,
+            ivs_max_1,
             advance_range_1,
             advance_range_2,
             start,
@@ -70,6 +71,9 @@ class SearchIVThread(QThread):
         program = cl.Program(ctx, SHADER_CODE).build(
             shaders.build_shader_constants(
                 ivs=reduce(lambda x, y: (x << 5) | y, ivs_1),
+                ivs_max=(
+                    reduce(lambda x, y: (x << 5) | y, ivs_max_1) if ivs_max_1 else 0
+                ),
                 min_advance=advance_range_1.start,
                 max_advance=advance_range_1.stop,
             )
@@ -78,7 +82,11 @@ class SearchIVThread(QThread):
         if ivs_2 is not None:
             target_ivs = reduce(lambda x, y: (x << 5) | y, ivs_2)
 
-        find_initial_seeds = program.find_initial_seeds
+        find_initial_seeds = (
+            program.find_initial_seeds
+            if ivs_max_1 is None
+            else program.find_initial_seeds_range
+        )
 
         host_results = np.zeros(
             round(4 * (advance_range_1.stop - advance_range_1.start) * 1.5), np.uint32
