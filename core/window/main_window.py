@@ -1,7 +1,6 @@
 """QWidget window for the main program"""
 
 from qtpy.QtWidgets import (
-    QLabel,
     QVBoxLayout,
     QWidget,
     QTabWidget,
@@ -10,6 +9,7 @@ from qtpy.QtWidgets import (
 from .opencl_selector import OpenCLSelector
 from .soaring_fidget import SoaringFidgetTab
 from .unique_hash import UniqueHashTab
+from .iv_search import IVSearchTab
 
 
 class MainWindow(QWidget):
@@ -28,6 +28,7 @@ class MainWindow(QWidget):
         self.opencl_selector = OpenCLSelector()
         self.tab_widget = QTabWidget()
 
+        self.tab_widget.addTab(IVSearchTab(self.opencl_selector), "IV Search")
         self.tab_widget.addTab(SoaringFidgetTab(self.opencl_selector), "Soaring Fidget")
         self.tab_widget.addTab(UniqueHashTab(self.opencl_selector), "Unique Hash")
 
