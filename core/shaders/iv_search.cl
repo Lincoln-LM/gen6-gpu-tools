@@ -80,7 +80,7 @@ __kernel void find_initial_seeds(const uint offset, __global uint *cnt, __global
     uint seed = get_global_id(0) + offset;
     struct mersenne_twister rng;
     init(&rng, seed);
-    advance(&rng, MIN_ADVANCE);
+    advance(&rng, MIN_ADVANCE + 63);
     uint ivs = 0;
     ivs |= next_32(&rng);
     ivs <<= 5;
@@ -106,7 +106,7 @@ __kernel void find_initial_seeds_range(const uint offset, __global uint *cnt, __
     uint seed = get_global_id(0) + offset;
     struct mersenne_twister rng;
     init(&rng, seed);
-    advance(&rng, MIN_ADVANCE);
+    advance(&rng, MIN_ADVANCE + 63);
     uint ivs = 0;
     ivs |= next_32(&rng);
     ivs <<= 5;

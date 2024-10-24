@@ -12,8 +12,9 @@ from qtpy.QtWidgets import (
     QLabel,
     QLineEdit,
     QDialog,
+    QApplication,
 )
-from qtpy.QtGui import QRegularExpressionValidator
+from qtpy.QtGui import QRegularExpressionValidator, QKeySequence
 from qtpy import QtCore
 
 from .range_widget import RangeWidget
@@ -21,6 +22,21 @@ from .opencl_selector import OpenCLSelector
 from .eta_progress_bar import ETAProgressBar
 from .iv_calc_window import IVCalculatorWindow
 from ..shaders.iv_search import SearchIVThread
+
+
+class SeedList(QListWidget):
+    """List for seed results"""
+
+    def keyPressEvent(self, event: QtCore.QEvent) -> None:
+        """Run on key press with widget focused"""
+        if event.matches(QKeySequence.Copy):
+            current_item = self.currentItem()
+            if current_item is not None:
+                text = current_item.text()
+                if "|" in text:
+                    # hacky, only copies the seed and not the extra info
+                    text = text.split(" (")[0]
+                QApplication.clipboard().setText(text)
 
 
 class IVSearchTab(QWidget):
@@ -34,7 +50,20 @@ class IVSearchTab(QWidget):
 
     def display_result(self, result) -> None:
         """Display the result of the search to a list"""
-        self.result_list.addItem(f"{result:08X}")
+        base_seed = (
+            int(seed_str, 16) if (seed_str := self.base_seed_input.text()) else 0
+        )
+        if self.full_search.isChecked():
+            self.result_list.addItem(f"{result:08X}")
+        else:
+            total_seconds_since_base = (result[0] - base_seed) // 1000
+            seconds = total_seconds_since_base % 60
+            total_minutes = total_seconds_since_base // 60
+            minutes = total_minutes % 60
+            hours = total_minutes // 60
+            self.result_list.addItem(
+                f"{result[0]:08X} ({hours:02d}:{minutes:02d}:{seconds:02d}) | Advance: {result[1]}"
+            )
 
     def search_button_work(self) -> None:
         """Starts search thread"""
@@ -164,7 +193,7 @@ class IVSearchTab(QWidget):
         self.search_button = QPushButton("Find Seed")
         self.search_button.clicked.connect(self.search_button_work)
         self.search_progress_bar = ETAProgressBar()
-        self.result_list = QListWidget()
+        self.result_list = SeedList()
 
         self.main_layout.addWidget(self.full_search)
         self.main_layout.addWidget(self.advance_range_1)

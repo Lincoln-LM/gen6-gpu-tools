@@ -13,10 +13,10 @@ SHADER_CODE = importlib.resources.read_text(shaders, "iv_search.cl")
 
 
 @numba.njit
-def test_seed(seed, target_ivs, min_advance, max_advance):
+def test_seed(seed, target_ivs_min, target_ivs_max, min_advance, max_advance) -> int:
     """Test if a seed contains the target ivs within the given range"""
     mt = MersenneTwister(seed)
-    mt.advance(min_advance)
+    mt.advance(min_advance + 63)
     ivs = np.uint32(0)
     ivs |= mt.next_rand(32)
     ivs <<= 5
@@ -29,9 +29,18 @@ def test_seed(seed, target_ivs, min_advance, max_advance):
     ivs |= mt.next_rand(32)
     ivs <<= 5
     ivs |= mt.next_rand(32)
-    for _ in range(min_advance, max_advance):
-        if (ivs & 0x3FFFFFFF) == target_ivs:
-            return seed
+    for adv in range(min_advance, max_advance):
+        valid = True
+        for i in range(6):
+            if not (
+                (target_ivs_min >> i * 5) & 31
+                <= (ivs >> i * 5) & 31
+                <= (target_ivs_max >> i * 5) & 31
+            ):
+                valid = False
+                break
+        if valid:
+            return adv
         ivs <<= 5
         ivs |= mt.next_rand(32)
     return None
@@ -115,11 +124,25 @@ class SearchIVThread(QThread):
             cl.enqueue_copy(queue, host_results, device_results)
             cl.enqueue_copy(queue, host_count, device_count)
             for i in range(last_count, host_count[0]):
+                # partial search
                 if target_ivs is None:
-                    self.results.emit(host_results[i])
+                    self.results.emit(
+                        (
+                            host_results[i],
+                            test_seed(
+                                host_results[i],
+                                reduce(lambda x, y: (x << 5) | y, ivs_1),
+                                reduce(lambda x, y: (x << 5) | y, ivs_max_1),
+                                advance_range_1.start,
+                                advance_range_1.stop,
+                            ),
+                        )
+                    )
+                # full search
                 elif (
                     test_seed(
                         host_results[i],
+                        target_ivs,
                         target_ivs,
                         advance_range_2.start,
                         advance_range_2.stop,
