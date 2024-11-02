@@ -5,4 +5,4 @@ QDarkStyle==3.1
 PySide6==6.6.0
 pycryptodome==3.21.0
 numba==0.59.0
-numba-pokemon-prngs @ git+https://github.com/Lincoln-LM/numba_pokemon_prngs@efecc128fe542e057e122bfc082047d83cb9ffdd
+numba-pokemon-prngs @ git+https://github.com/Lincoln-LM/numba_pokemon_prngs@1d4651a65dde848a8272f05f8844d5cadb23b305

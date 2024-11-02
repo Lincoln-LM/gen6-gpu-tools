@@ -8,6 +8,7 @@ from qtpy.QtWidgets import (
 
 from .opencl_selector import OpenCLSelector
 from .soaring_fidget import SoaringFidgetTab
+from .pokemon_blink import PokemonBlinkTab
 from .unique_hash import UniqueHashTab
 from .iv_search import IVSearchTab
 
@@ -30,6 +31,7 @@ class MainWindow(QWidget):
 
         self.tab_widget.addTab(IVSearchTab(self.opencl_selector), "IV Search")
         self.tab_widget.addTab(SoaringFidgetTab(self.opencl_selector), "Soaring Fidget")
+        self.tab_widget.addTab(PokemonBlinkTab(self.opencl_selector), "Pokemon Blink")
         self.tab_widget.addTab(UniqueHashTab(self.opencl_selector), "Unique Hash")
 
         self.main_layout.addWidget(self.opencl_selector)
