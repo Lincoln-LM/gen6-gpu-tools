@@ -54,6 +54,7 @@ class SearchIVThread(QThread):
     results = Signal(object)
     init_progress_bar = Signal(int)
     progress = Signal(int)
+    started = Signal()
 
     def __init__(self, *args) -> None:
         super().__init__()
@@ -109,6 +110,7 @@ class SearchIVThread(QThread):
         cl.enqueue_copy(queue, device_count, host_count)
         # TODO: custom step count/chunk size
         self.init_progress_bar.emit(chunks)
+        self.started.emit()
         last_count = 0
         for chunk in range(chunks):
             if self.isInterruptionRequested():

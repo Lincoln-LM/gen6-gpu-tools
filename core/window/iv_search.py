@@ -85,6 +85,7 @@ class IVSearchTab(QWidget):
         else:
             self.result_list.clear()
             self.search_button.setText("Stop Search")
+            self.search_button.setEnabled(False)
 
             self.search_thread = SearchIVThread(
                 platform,
@@ -112,6 +113,9 @@ class IVSearchTab(QWidget):
             self.search_thread.progress.connect(self.search_progress_bar.setValue)
             self.search_thread.finished.connect(
                 lambda: self.search_button.setText("Start Search")
+            )
+            self.search_thread.started.connect(
+                lambda: self.search_button.setEnabled(True)
             )
             self.search_thread.start()
 
