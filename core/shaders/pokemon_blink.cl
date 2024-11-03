@@ -62,7 +62,7 @@ inline void init(struct tinymt *rng, unsigned int seed) {
 }
 
 __kernel void find_initial_seeds(const uint offset, __global uint *cnt, __global uint *res_g) {
-  unsigned int seed = get_global_id(0) | ((get_global_id(1) + offset) << 16);
+  uint seed = get_global_id(0) + offset;
   struct tinymt rng;
   init(&rng, seed);
   for (int i = 0; i < BASE_ADVANCE; i++) {
