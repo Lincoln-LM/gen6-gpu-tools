@@ -87,7 +87,7 @@ class PokemonBlinkTab(QWidget):
         assert len(result[0]) == 1, f"Expected 1 result, got {result[0]}"
         if self.search_type.currentIndex() == 2:
             self.result_label.setText(
-                f"Starting Advance: {result[0][0]}\nResult Advance: {result[0][0] + len(self.blinks)-1+2}"
+                f"Starting Advance: {result[0][0]}\nResult Advance: {result[0][0] + len(self.blinks)-1+1}"
             )
         else:
             initial_state = TinyMersenneTwister(result[0][0]).state
@@ -95,7 +95,7 @@ class PokemonBlinkTab(QWidget):
                 f"Initial Seed: {result[0][0]:08X}\n"
                 f"Initial State: {initial_state[3]:08X} {initial_state[2]:08X} {initial_state[1]:08X} {initial_state[0]:08X}\n"
                 + f"Starting Advance: {result[1]}\n"
-                + f"Result Advance: {result[1] + len(self.blinks)-1+2}"
+                + f"Result Advance: {result[1] + len(self.blinks)-1+1}"
             )
 
     def search_button_work(self) -> None:
